@@ -42,22 +42,30 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     enabledAll: true,
     sources: {},
   },
+
   loadSettings: async () => {
     const settings = await SettingsManager.get();
+
+    // ✅ 加上默认值 fallback
+    const baseUrl = settings.apiBaseUrl || "http://28918185.xyz:1029/";
+    const m3uUrl = settings.m3uUrl || "https://28918185.xyz:25722/live_resources/oriontv.m3u";
+
     set({
-      apiBaseUrl: settings.apiBaseUrl,
-      m3uUrl: settings.m3uUrl,
+      apiBaseUrl: baseUrl,
+      m3uUrl,
       remoteInputEnabled: settings.remoteInputEnabled || false,
       videoSource: settings.videoSource || {
         enabledAll: true,
         sources: {},
       },
     });
-    if (settings.apiBaseUrl) {
-      api.setBaseUrl(settings.apiBaseUrl);
-      await get().fetchServerConfig();
-    }
+
+    // ✅ 确保 API 初始化
+    api.setBaseUrl(baseUrl);
+
+    await get().fetchServerConfig();
   },
+
   fetchServerConfig: async () => {
     set({ isLoadingServerConfig: true });
     try {
@@ -73,10 +81,12 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       set({ isLoadingServerConfig: false });
     }
   },
+
   setApiBaseUrl: (url) => set({ apiBaseUrl: url }),
   setM3uUrl: (url) => set({ m3uUrl: url }),
   setRemoteInputEnabled: (enabled) => set({ remoteInputEnabled: enabled }),
   setVideoSource: (config) => set({ videoSource: config }),
+
   saveSettings: async () => {
     const { apiBaseUrl, m3uUrl, remoteInputEnabled, videoSource } = get();
 
@@ -87,9 +97,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
     if (!/^https?:\/\//i.test(processedApiBaseUrl)) {
       const hostPart = processedApiBaseUrl.split("/")[0];
-      // Simple check for IP address format.
       const isIpAddress = /^((\d{1,3}\.){3}\d{1,3})(:\d+)?$/.test(hostPart);
-      // Check if the domain includes a port.
       const hasPort = /:\d+/.test(hostPart);
 
       if (isIpAddress || hasPort) {
@@ -105,11 +113,13 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       remoteInputEnabled,
       videoSource,
     });
+
     api.setBaseUrl(processedApiBaseUrl);
-    // Also update the URL in the state so the input field shows the processed URL
     set({ isModalVisible: false, apiBaseUrl: processedApiBaseUrl });
     await get().fetchServerConfig();
   },
+
   showModal: () => set({ isModalVisible: true }),
   hideModal: () => set({ isModalVisible: false }),
 }));
+
