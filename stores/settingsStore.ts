@@ -7,8 +7,8 @@ import Logger from "@/utils/Logger";
 const logger = Logger.withTag("SettingsStore");
 
 // ✅ 统一默认值定义
-const DEFAULT_API_BASE_URL = "http://28918185.xyz:1029/";
-const DEFAULT_M3U_URL = "https://28918185.xyz:25722/live_resources/oriontv.m3u";
+const DEFAULT_API_BASE_URL = "http://192.168.1.66:1029/";
+const DEFAULT_M3U_URL = "https://192.168.1.66:25722/live_resources/oriontv.m3u";
 
 interface SettingsState {
   apiBaseUrl: string;
