@@ -31,8 +31,8 @@ interface SettingsState {
 }
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
-  apiBaseUrl: "",
-  m3uUrl: "",
+  apiBaseUrl: "http://28918185.xyz:1029/",
+  m3uUrl: "https://28918185.xyz:25722/live_resources/oriontv.m3u",
   liveStreamSources: [],
   remoteInputEnabled: false,
   isModalVisible: false,
