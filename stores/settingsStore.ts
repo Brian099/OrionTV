@@ -4,7 +4,11 @@ import { api, ServerConfig } from "@/services/api";
 import { storageConfig } from "@/services/storageConfig";
 import Logger from "@/utils/Logger";
 
-const logger = Logger.withTag('SettingsStore');
+const logger = Logger.withTag("SettingsStore");
+
+// ✅ 统一默认值定义
+const DEFAULT_API_BASE_URL = "http://28918185.xyz:1029/";
+const DEFAULT_M3U_URL = "https://28918185.xyz:25722/live_resources/oriontv.m3u";
 
 interface SettingsState {
   apiBaseUrl: string;
@@ -31,9 +35,9 @@ interface SettingsState {
 }
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
-  apiBaseUrl: "http://28918185.xyz:1029/",
-  m3uUrl: "https://28918185.xyz:25722/live_resources/oriontv.m3u",
-  liveStreamSources: [],
+  // ✅ 使用统一默认值
+  apiBaseUrl: DEFAULT_API_BASE_URL,
+  m3uUrl: DEFAULT_M3U_URL,
   remoteInputEnabled: false,
   isModalVisible: false,
   serverConfig: null,
@@ -46,9 +50,8 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   loadSettings: async () => {
     const settings = await SettingsManager.get();
 
-    // ✅ 加上默认值 fallback
-    const baseUrl = settings.apiBaseUrl || "http://28918185.xyz:1029/";
-    const m3uUrl = settings.m3uUrl || "https://28918185.xyz:25722/live_resources/oriontv.m3u";
+    const baseUrl = settings.apiBaseUrl || DEFAULT_API_BASE_URL;
+    const m3uUrl = settings.m3uUrl || DEFAULT_M3U_URL;
 
     set({
       apiBaseUrl: baseUrl,
@@ -60,9 +63,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       },
     });
 
-    // ✅ 确保 API 初始化
     api.setBaseUrl(baseUrl);
-
     await get().fetchServerConfig();
   },
 
@@ -99,12 +100,9 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       const hostPart = processedApiBaseUrl.split("/")[0];
       const isIpAddress = /^((\d{1,3}\.){3}\d{1,3})(:\d+)?$/.test(hostPart);
       const hasPort = /:\d+/.test(hostPart);
-
-      if (isIpAddress || hasPort) {
-        processedApiBaseUrl = "http://" + processedApiBaseUrl;
-      } else {
-        processedApiBaseUrl = "https://" + processedApiBaseUrl;
-      }
+      processedApiBaseUrl = (isIpAddress || hasPort)
+        ? "http://" + processedApiBaseUrl
+        : "https://" + processedApiBaseUrl;
     }
 
     await SettingsManager.save({
@@ -122,4 +120,3 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   showModal: () => set({ isModalVisible: true }),
   hideModal: () => set({ isModalVisible: false }),
 }));
-
